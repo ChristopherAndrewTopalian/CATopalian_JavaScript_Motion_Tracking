@@ -1,0 +1,285 @@
+<!-- Dedicated to God the Father -->
+<!-- All Rights Reserved Christopher Andrew Topalian Copyright 2000-2025 -->
+<!-- https://github.com/ChristopherTopalian -->
+<!-- https://github.com/ChristopherAndrewTopalian -->
+<!-- CATopalian_JavaScript_Motion_Tracking.html -->
+
+<html>
+<head>
+<title> CATopalian JavaScript Motion Tracking </title>
+
+<meta name = "viewport" content = "width=device-width, initial-scale=1.0">
+
+<style>
+
+body
+{
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: rgb(50, 50, 50);
+    color: white;
+}
+
+a
+{
+    color: rgb(100, 100, 100);
+}
+
+#trackingDiv
+{
+    width: 50px;
+    height: 50px;
+    background-color: rgb(0, 217, 255);
+    position: absolute;
+    border-radius: 50%;
+    transition: all 0.1s ease;
+}
+
+canvas
+{
+    /* hide the canvas, only use it for processing */
+    display: none;
+}
+</style>
+
+<script>
+
+// worldVariables.js
+
+let videoElement;
+let canvasElement;
+let canvasContext;
+// declare the trackingDiv here
+let trackingDiv;
+
+// store the previous frame for motion comparison
+let prevFrameData = null;
+
+//----//
+
+// shortcuts.js
+
+function ge(whichId)
+{
+    let result = document.getElementById(whichId);
+    return result;
+}
+
+function ce(whichType)
+{
+    let result = document.createElement(whichType);
+    return result;
+}
+
+function ba(whichElement)
+{
+    let result = document.body.append(whichElement);
+    return result;
+}
+
+function cl(whichMessage)
+{
+    let result = console.log(whichMessage);
+    return result;
+}
+
+//----//
+
+// makeTitleOfApp.js
+
+function makeTitleOfApp()
+{
+    let theTitle = ce('a');
+    theTitle.id = 'theTitle';
+    theTitle.href = 'https://github.com/ChristopherAndrewTopalian/CATopalian_JavaScript_Motion_Tracking';
+    theTitle.target = '_blank';
+    theTitle.textContent = 'CATopalian JavaScript Motion Tracking';
+    theTitle.style.position = 'absolute';
+    theTitle.style.right = 0 + 'px';
+    theTitle.style.top = -5 + 'px';
+    theTitle.style.margin = 10 + 'px';
+    theTitle.style.fontFamily = 'Arial';
+    theTitle.style.fontSize = '15px';
+    theTitle.style.fontWeight = 'bold';
+    theTitle.style.textAlign = 'right';
+    theTitle.style.lineHeight = 15 + 'px';
+    theTitle.style.textDecoration = 'none';
+    theTitle.style.color = 'rgb(100, 100, 100)';
+    theTitle.style.textShadow = '1px 1px rgb(0, 0, 0)';
+    ba(theTitle);
+}
+
+//----//
+
+// create the tracking div element
+function makeTrackingDiv()
+{
+    trackingDiv = ce('div');
+    // assign an id so we can access it in the style
+    trackingDiv.id = 'trackingDiv';
+    // add it to the body
+    ba(trackingDiv);
+}
+
+//----//
+
+// set up the webcam feed
+function setupWebcam()
+{
+    videoElement = ce('video');
+    videoElement.width = 640;
+    videoElement.height = 480;
+    ba(videoElement);
+
+    //-//
+
+    // access the webcam
+    navigator.mediaDevices.getUserMedia(
+    {
+        video: true
+    })
+    .then(function(stream)
+    {
+        videoElement.srcObject = stream;
+        videoElement.play();
+        setupCanvas();
+    })
+    .catch(function(err)
+    {
+        console.error("Error accessing webcam: " + err);
+    });
+}
+
+//----//
+
+// set up the canvas for processing
+function setupCanvas()
+{
+    canvasElement = ce('canvas');
+    canvasElement.width = 640;
+    canvasElement.height = 480;
+    canvasContext = canvasElement.getContext('2d');
+    ba(canvasElement);
+
+    //-//
+
+    // start motion tracking
+    trackMotion();
+}
+
+//----//
+
+// track motion by comparing consecutive frames
+function trackMotion()
+{
+    setInterval(function()
+    {
+        // draw video on canvas
+        canvasContext.drawImage(videoElement, 0, 0, 640, 480);
+
+        let imageData = canvasContext.getImageData(0, 0, canvasElement.width, canvasElement.height);
+
+        let data = imageData.data;
+
+        // if it's the first frame, just save it as the reference frame
+        if (prevFrameData === null)
+        {
+            prevFrameData = data;
+            return;
+        }
+
+        // compare current frame with the previous frame to detect motion
+        let motionDetected = false;
+        let motionX = 0;
+        let motionY = 0;
+        let motionCount = 0;
+
+        // loop through each pixel to detect significant changes (motion)
+        for (let i = 0; i < data.length; i += 4)
+        {
+            // Red from previous frame
+            let r1 = prevFrameData[i];
+
+            // Green from previous frame
+            let g1 = prevFrameData[i + 1];
+
+            // Blue from previous frame
+            let b1 = prevFrameData[i + 2];
+
+            // Red from current frame
+            let r2 = data[i];
+
+            // Green from current frame
+            let g2 = data[i + 1];
+
+            // Blue from current frame
+            let b2 = data[i + 2];
+
+            // calculate the difference between the previous and current pixel values
+            let diff = Math.abs(r1 - r2) + Math.abs(g1 - g2) + Math.abs(b1 - b2);
+
+            // if the difference is large enough, we consider it motion
+
+            // threshold for motion detection
+            if (diff > 50)
+            {
+                // x coordinate (pixel index)
+                let x = (i / 4) % 640;
+
+                // y coordinate (pixel index)
+                let y = Math.floor((i / 4) / 640);
+
+                motionX += x;
+                motionY += y;
+                motionCount++;
+                motionDetected = true;
+            }
+        }
+
+        // if motion was detected, calculate the center and move the div
+        if (motionDetected && motionCount > 0)
+        {
+            motionX = motionX / motionCount;
+            motionY = motionY / motionCount;
+
+            // move the tracking div to the calculated position
+
+            // offset by 25px to center the div
+            trackingDiv.style.left = (motionX - 25) + "px";
+
+            // offset by 25px to center the div
+            trackingDiv.style.top = (motionY - 25) + "px";
+        }
+
+        // update the previous frame to be the current frame for the next comparison
+        prevFrameData = data;
+        // update every 30ms for smooth tracking
+    }, 30);
+}
+
+//----//
+
+function whenLoaded()
+{
+    setupWebcam();
+
+    // create the trackingDiv before using it
+    makeTrackingDiv();
+
+    makeTitleOfApp();
+}
+
+</script>
+
+</head>
+
+<body onload = 'whenLoaded();'>
+
+</body>
+
+</html>
+

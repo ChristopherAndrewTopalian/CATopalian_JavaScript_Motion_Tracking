@@ -9,6 +9,8 @@ A JavaScript Camera Application that tracks any motion using Canvas, which is hi
 
 ![screenshot_004](src/media/textures/screenshots/004.PNG)
 
+Use App: https://christopherandrewtopalian.github.io/CATopalian_JavaScript_Motion_Tracking/CATopalian_JavaScript_Motion_Tracking.html
+
 [Video](https://www.youtube.com/watch?v=5_DzV-Hb3W4)
 
 ---

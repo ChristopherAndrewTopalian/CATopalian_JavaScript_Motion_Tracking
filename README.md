@@ -1,13 +1,13 @@
 # CATopalian JavaScript Motion Tracking
 A JavaScript Camera Application that tracks any motion using Canvas, which is highly efficient.
 
-![screenshot_001](src/media/textures/screenshots/001.png)
+![screenshot_001](src/media/textures/screenshots/001.PNG)
 
-![screenshot_002](src/media/textures/screenshots/002.png)
+![screenshot_002](src/media/textures/screenshots/002.PNG)
 
-![screenshot_003](src/media/textures/screenshots/003.png)
+![screenshot_003](src/media/textures/screenshots/003.PNG)
 
-![screenshot_004](src/media/textures/screenshots/004.png)
+![screenshot_004](src/media/textures/screenshots/004.PNG)
 
 [Video](https://www.youtube.com/watch?v=5_DzV-Hb3W4)
 
